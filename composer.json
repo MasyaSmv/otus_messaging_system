@@ -2,9 +2,14 @@
   "name": "masyasmv/otus_messaging_system",
   "description": "Endpoint для приёма входящих сообщений от Агентов",
   "require": {
-    "php": "^8.3"
+    "php": "^8.3",
+    "php-amqplib/php-amqplib": "^3.0",
+    "masyasmv/otus-macro-commands": "^1.0",
+    "masyasmv/otus_ioc_container": "^1.0",
+    "masyasmv/otus_moving_objects": "^1.0"
   },
   "require-dev": {
+    "roave/security-advisories": "dev-latest",
     "phpunit/phpunit": "^12.1"
   },
   "autoload": {
