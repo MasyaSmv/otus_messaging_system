@@ -24,3 +24,6 @@ IoC::Resolve('IoC.Register', 'game.default', fn() => $defaultGame)->Execute();
 $operations = require __DIR__.'/config/operations.php';
 IoC::Resolve('IoC.Register','operation.resolver',
     static fn() => new OperationResolver($operations))->Execute();
+
+register_shutdown_function([Masyasmv\Messaging\Service\AmqpConnectionPool::class, 'close']);
+
