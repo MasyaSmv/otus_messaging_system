@@ -2,8 +2,8 @@
 
 namespace Masyasmv\Messaging\Service;
 
+use Closure;
 use InvalidArgumentException;
-use Masyasmv\IoC\IoC;
 use Masyasmv\OtusMacroCommands\Contract\CommandInterface;
 
 final class OperationResolver
@@ -38,17 +38,18 @@ final class OperationResolver
     public function resolve(string $operationId, object $target, array $args): CommandInterface
     {
         if (!isset($this->operations[$operationId])) {
-            throw new InvalidArgumentException("Операция «{$operationId}» не зарегистрирована");
+            throw new InvalidArgumentException("Operation «{$operationId}» not supported");
         }
 
-        $commandClass = $this->operations[$operationId];
+        $factory = $this->operations[$operationId];
 
-        /** @var CommandInterface $cmd */
-        $cmd = IoC::Resolve(
-            $commandClass,
-            $target,
-            ...array_values($args),
-        );
+        if ($factory instanceof Closure) {
+            /** @var CommandInterface $cmd */
+            $cmd = $factory($target, $args);
+        } else {
+            // если у вас просто FQCN и args идут [dx, dy]
+            $cmd = new $factory($target, ...array_values($args));
+        }
 
         return $cmd;
     }

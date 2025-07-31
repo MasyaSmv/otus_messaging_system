@@ -16,8 +16,10 @@ class Publisher
      */
     public function __construct()
     {
-        $conn = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
+        $conn = new AMQPStreamConnection('localhost', 5673, 'myuser', 'mypass');
         $this->channel = $conn->channel();
+
+        // убедимся, что exchange существует
         $this->channel->exchange_declare('game_messages', 'direct', false, true, false);
     }
 

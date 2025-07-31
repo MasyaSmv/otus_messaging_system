@@ -1,58 +1,46 @@
 <?php
 
 require __DIR__ . '/bootstrap.php';
+require __DIR__.'/seeds/battles.php';
 
 use Masyasmv\IoC\IoC;
-use Masyasmv\Messaging\Http\Controller\MessageController;
-use Masyasmv\Messaging\Service\GameServer;
+use Masyasmv\Messaging\Domain\Command\InterpretCommand;
+use Masyasmv\Messaging\Domain\Message\IncomingMessage;
 use PhpAmqpLib\Connection\AMQPStreamConnection;
 use PhpAmqpLib\Message\AMQPMessage;
 
 // 1) Подключаемся к RabbitMQ (порт, который вы пробросили в docker-compose)
-$connection = new AMQPStreamConnection('localhost', 5672, 'guest', 'guest');
-$channel    = $connection->channel();
+$connection = new AMQPStreamConnection('localhost', 5673, 'myuser', 'mypass');
+$channel = $connection->channel();
 
 // 2) Объявляем exchange/queue/bind (если ещё не объявлены)
 $channel->exchange_declare('game_messages', 'direct', false, true, false);
-$channel->queue_declare   ('message_processor', false, true, false, false);
-$channel->queue_bind      ('message_processor', 'game_messages', 'agent.msg');
+$channel->queue_declare('message_processor', false, true, false, false);
+$channel->queue_bind('message_processor', 'game_messages', 'agent.msg');
+
+echo "[*] Waiting for messages...\n";
 
 // 3) Callback для обработки сообщений
-$callback = static function(AMQPMessage $msg) {
-    echo "[x] Received: ", $msg->getBody(), "\n";
-
-    $payload = json_decode($msg->getBody(), true);
-    if (!is_array($payload)) {
-        echo "[!] Invalid JSON\n";
+$callback = static function (AMQPMessage $msg) {
+    $data = json_decode($msg->getBody(), true);
+    if (!is_array($data)) {
         $msg->ack();
         return;
     }
 
-    /** @var GameServer $game */
-    $game = IoC::Resolve('game.default');
+    // 3) Преобразуем в объект и исполняем команду
+    $incoming = IncomingMessage::fromArray($data);
+    /** @var InterpretCommand $cmd */
+    $cmd = IoC::Resolve('interpret.command', $incoming);
+    $cmd->execute();                 // ставит нужную OperationCommand в очередь игры
+    IoC::Resolve('game.default')     // берём GameServer
+    ->processQueue();             // и выполняем все накопленные команды
 
-    // Передаём в контроллер — он вызовет InterpretCommand и enqueue
-    $controller = new MessageController();
-    $result     = $controller->receive($payload, $game);
-    echo "[>] Controller result: ", json_encode($result), "\n";
-
-    // Выполняем очередь внутри GameServer
-    $game->processQueue();
-
-    $msg->ack();
+    $msg->ack();                     // подтверждаем сообщение
 };
 
-$channel->basic_consume(
-    'message_processor',
-    '',
-    false,
-    false,
-    false,
-    false,
-    $callback
-);
-
-echo "[*] Waiting for messages...\n";
+// 4) Запуск консьюмера
+$channel->basic_consume('message_processor', '', false, false, false, false, $callback);
 while ($channel->is_consuming()) {
     $channel->wait();
 }

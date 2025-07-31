@@ -3,6 +3,7 @@
 namespace Masyasmv\Messaging\Domain\Command;
 
 use Masyasmv\IoC\IoC;
+use Masyasmv\Messaging\Service\OperationResolver;
 use Masyasmv\OtusMacroCommands\Contract\CommandInterface;
 use Masyasmv\Messaging\Domain\GameServerInterface;
 use Masyasmv\Messaging\Domain\Message\IncomingMessage;
