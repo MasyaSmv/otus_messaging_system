@@ -1,0 +1,36 @@
+{
+  "name": "masyasmv/otus_messaging_system",
+  "description": "Endpoint для приёма входящих сообщений от Агентов",
+  "require": {
+    "php": "^8.3",
+    "php-amqplib/php-amqplib": "^3.0",
+    "masyasmv/otus-macro-commands": "^1.0",
+    "masyasmv/otus_ioc_container": "^1.0",
+    "masyasmv/otus_moving_objects": "^1.0"
+  },
+  "require-dev": {
+    "roave/security-advisories": "dev-latest",
+    "phpunit/phpunit": "^12.1"
+  },
+  "autoload": {
+    "psr-4": {
+      "Masyasmv\\Messaging\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\": "tests/"
+    }
+  },
+  "scripts": {
+    "test": "phpunit --no-coverage",
+    "test-coverage": "phpunit --coverage-html coverage"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "sort-packages": true
+  },
+  "minimum-stability": "stable",
+  "prefer-stable": true
+}

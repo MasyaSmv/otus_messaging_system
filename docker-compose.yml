@@ -1,0 +1,9 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.9-management
+    environment:
+      RABBITMQ_DEFAULT_USER: myuser
+      RABBITMQ_DEFAULT_PASS: mypass
+    ports:
+      - "5673:5672"      # AMQP
+      - "15673:15672"    # Management UI
