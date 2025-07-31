@@ -2,25 +2,25 @@
 
 namespace Masyasmv\Messaging\Domain\Message;
 
-use InvalidArgumentException;
-
 final class IncomingMessage
 {
     public function __construct(
-        private readonly string $gameId,
-        private readonly string $objectId,
-        private readonly string $operationId,
-        private readonly array $args,
+        private int $version,
+        private string $gameId,
+        private string $objectId,
+        private string $operationId,
+        private array $args = []
     ) {
     }
 
-    public static function fromArray(array $data): self
+    public static function fromArray(array $src): self
     {
         return new self(
-            (string)($data['game_id'] ?? throw new InvalidArgumentException('game_id')),
-            (string)($data['object_id'] ?? throw new InvalidArgumentException('object_id')),
-            (string)($data['operation_id'] ?? throw new InvalidArgumentException('operation_id')),
-            (array)($data['args'] ?? []),
+            (int)($src['version'] ?? 1),
+            (string)$src['game_id'],
+            (string)$src['object_id'],
+            (string)$src['operation_id'],
+            (array)($src['args'] ?? []),
         );
     }
 
@@ -37,6 +37,11 @@ final class IncomingMessage
     public function operationId(): string
     {
         return $this->operationId;
+    }
+
+    public function version(): string
+    {
+        return $this->version;
     }
 
     public function args(): array
