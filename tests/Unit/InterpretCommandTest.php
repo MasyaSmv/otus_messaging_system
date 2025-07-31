@@ -24,10 +24,16 @@ final class InterpretCommandTest extends TestCase
         $registry->register('battle-1', $game);
 
         IoC::Resolve('IoC.Register', 'game.registry', fn() => $registry)->Execute();
-        IoC::Resolve('IoC.Register', 'operation.resolver',
-            fn() => new OperationResolver([
-                'noop' => static fn() => $this->createMock(CommandInterface::class),
-            ]))->Execute();
+        IoC::Resolve(
+            'IoC.Register',
+            'operation.resolver',
+            fn () => new OperationResolver([
+                // убираем `static` и принимаем параметры, чтобы сигнатура совпала
+                'noop' => function ($target, array $args) {
+                    return $this->createMock(CommandInterface::class);
+                },
+            ]),
+        )->Execute();
 
         $msg  = new IncomingMessage(1, 'battle-1', 'ship', 'noop', []);
         $cmd  = new InterpretCommand($msg);

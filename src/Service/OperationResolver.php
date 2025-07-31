@@ -12,7 +12,8 @@ final class OperationResolver
     private array $operations;
 
     /**
-     * @param array<string,string> $operations
+     * @param array<string, callable|class-string> $operations
+     *         ключ operationId → фабрика-callable **или** FQCN команды
      *   Например:
      *     [
      *       'move'   => \Masyasmv\OtusMovingObjects\Command\MoveCommand::class,
